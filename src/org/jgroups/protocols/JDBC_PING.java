@@ -205,9 +205,14 @@ public class JDBC_PING extends Discovery {
         final Connection connection = getConnection();
         if (connection != null) {
             try {
-                if(overwrite)
+            	//to maintain TXN-Scope across two DB calls
+                if(overwrite){
+                    connection.setAutoCommit(false);//doubly sure about single commit across two TXNs
                     delete(connection, clustername, ownAddress);
+                }
                 insert(connection, data, clustername, ownAddress);
+                if(overwrite)
+                    connection.commit();//commit both the changes together to avoid
             } catch (SQLException e) {
                 log.error("Error updating JDBC_PING table", e);
             } finally {
